@@ -168,6 +168,4 @@ void draw() {
   background(imgBuffer);  
 
   surface.setTitle(""+int(frameRate) + "/" + frameCount);
-
-  //saveFrame("output/codingrain#####.png");
 }
