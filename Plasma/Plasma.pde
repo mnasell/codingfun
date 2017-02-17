@@ -1,7 +1,7 @@
-/* Plasma Demo ... */ //<>//
+/* Plasma Demo ... */
 // Message stuff
 String fontname = "Arial Black";
-String message="... HALLO CODINGTRAIN COMMUNITY ... ALWAYS HAPPY CODING ... GREETINGS TO ALL ... AND HAVE A GREAT DAY ... SPECIAL THANKS TO DAN FOR HIS GREAT WORK ...              ";
+String message="--- HELLO CODINGTRAIN COMMUNITY ... ALWAYS HAPPY CODING ... GREETINGS TO ALL ... AND HAVE A GREAT DAY ... SPECIAL THANKS TO \"DAN\" FOR HIS GREAT WORK ---                ";
 float msgidx = 0;
 float charWidth;
 
@@ -15,28 +15,32 @@ boolean showPalette=false;
 // helping Vars
 int halfWidth;
 int halfHeight;
+int doubleWidth;
+int doubleHeight;
 
 void setup() {
-  size(960, 540);
+  size(1024, 576); 
 
   halfWidth=width/2;
   halfHeight=height/2;
+  doubleWidth=width*2;
+  doubleHeight=height*2;
 
   // Generate a Rainbow Palette
   palette = createPalette(color(211, 3, 201), color(122, 3, 229), color(3, 104, 255), color(3, 188, 63), color(255, 255, 3), color(255, 127, 3), color(255, 3, 3), color(211, 3, 201));
 
   // Generate Plasma Waves double of screen width and height, so they can be easily moved arround 
-  plasma = new float[4][width*height*4];   
-  for (int y = 0; y < height*2; y++) {
-    for (int x = 0; x < width*2; x++) {      
+  plasma = new float[4][doubleWidth*doubleHeight];   
+  for (int y = 0; y < doubleHeight; y++) {
+    for (int x = 0; x < doubleWidth; x++) {      
       // Vertical
-      plasma[0][(y*width*2)+x] = (128.0 + (128.0 * sin(x / 64.0)));
+      plasma[0][y*doubleWidth+x] = (128.0 + (128.0 * sin(x / 64.0)));
       // Horizontal
-      plasma[1][(y*width*2)+x] = (128.0 + (128.0 * sin(y / 128.0)));
+      plasma[1][y*doubleWidth+x] = (128.0 + (128.0 * sin(y / 128.0)));
       // Diagonal
-      plasma[2][(y*width*2)+x] = (128.0 + (128.0 * sin((x + y) / 128.0)));
+      plasma[2][y*doubleWidth+x] = (128.0 + (128.0 * sin((x + y) / 128.0)));
       // Centric
-      plasma[3][(y*width*2)+x] = (128.0 + (128.0 * sin(sqrt((x - width) * (x - width) + (y - height) * (y - height)) / 64.0)));
+      plasma[3][y*doubleWidth+x] = (128.0 + (128.0 * sin(sqrt((x - width) * (x - width) + (y - height) * (y - height)) / 64.0)));
     }
   }
 
@@ -45,7 +49,7 @@ void setup() {
   textFont(createFont(fontname, 60));  
   textAlign(CENTER, CENTER);
   // constant width for chars
-  charWidth=textWidth("O");
+  charWidth=textWidth("O"); 
 }
 
 void keyReleased() {
@@ -70,36 +74,36 @@ void keyReleased() {
 }
 
 void draw() {
-  int timer = floor(millis()*0.025); // a simple timer
-  int paletteShift = int(timer*10); // rotate palette 
+  int pseudoTimer = frameCount/3; // a simple dummy timer
+  int paletteShift = int(pseudoTimer*10); // rotate palette 
 
   // Draw Plasma
   loadPixels();
   // shift vertical stripes periodically left and right
-  int shiftx1=floor(halfWidth+halfWidth*sin(radians(timer)));
-  int shifty1=halfHeight;
+  int plasmaShiftX0=floor(halfWidth+halfWidth*sin(radians(pseudoTimer)));
+  int plasmaShiftY0=halfHeight;
 
   // shift horizontally stripes periodically up and down
-  int shiftx2=halfWidth;
-  int shifty2=floor(halfHeight+halfHeight*sin(radians(timer)));
+  int plasmaShiftX1=halfWidth;
+  int plasmaShiftY1=floor(halfHeight+halfHeight*sin(radians(pseudoTimer)));
 
-  // same for diagonally ones
-  int shiftx3=halfWidth;
-  int shifty3=floor(halfHeight+halfHeight*sin(radians(timer*2.0)));
+  // rotation circle/elliptic clockwise
+  int plasmaShiftX2=floor(halfWidth+halfWidth*cos(radians(pseudoTimer)));
+  int plasmaShiftY2=floor(halfHeight+halfHeight*sin(radians(pseudoTimer)));
 
-  // rotate centric in an eight shaped way
-  int shiftx4=floor(halfWidth+halfWidth*sin(radians(timer*2.0)));
-  int shifty4=floor(halfHeight+halfHeight*cos(radians(timer)));
+  // rotate centric/elliptic in an eight shaped way anti clockwise
+  int plasmaShiftX3=floor(halfWidth+halfWidth*sin(radians(pseudoTimer*2.0)));
+  int plasmaShiftY3=floor(halfHeight+halfHeight*cos(radians(pseudoTimer)));
 
   // aggregate the several plasma images to screen, and also shift the palette 
   for (int y = 0; y < height; y++) {
     for (int x = 0; x < width; x++) {
-      int idx=y*width+x;        
-      int idx1=((y+shifty1)*(width*2))+x+shiftx1;
-      int idx2=((y+shifty2)*(width*2))+x+shiftx2;
-      int idx3=((y+shifty3)*(width*2))+x+shiftx3;
-      int idx4=((y+shifty4)*(width*2))+x+shiftx4;
-      pixels[idx] =  palette[(floor(plasma[0][idx1] + plasma[1][idx2] + plasma[2][idx3] + plasma[3][idx4])+paletteShift)%256];
+      int tgtPos=y*width+x;        
+      int srcPos0=((y+plasmaShiftY0)*doubleWidth)+x+plasmaShiftX0;
+      int srcPos1=((y+plasmaShiftY1)*doubleWidth)+x+plasmaShiftX1;
+      int srcPos2=((y+plasmaShiftY2)*doubleWidth)+x+plasmaShiftX2;
+      int srcPos3=((y+plasmaShiftY3)*doubleWidth)+x+plasmaShiftX3;
+      pixels[tgtPos] =  palette[(floor(plasma[0][srcPos0] + plasma[1][srcPos1] + plasma[2][srcPos2] + plasma[3][srcPos3])+paletteShift)%256];
     }
   }
   updatePixels();
@@ -108,15 +112,15 @@ void draw() {
   noStroke();
   fill(0, 150);
   beginShape(TRIANGLE_STRIP);  
-  vertex(width, halfHeight+(cos(timer/6.0)*(height/4.0)*(sin(timer/100.0)))-50); 
+  vertex(width, halfHeight+(sin(pseudoTimer/6.0)*(height>>2)*(sin(pseudoTimer*0.01)))-50); 
   for (int j=1; j<message.length(); j++) {      
     int idx = j-1;         
     float x = width-idx*charWidth;
-    float y = halfHeight+(cos((timer+idx)/6.0)*(height/4.0)*(sin(timer/100.0)));
+    float y = halfHeight+(sin((pseudoTimer+idx)/6.0)*(height>>2)*(sin(pseudoTimer*0.01)));
     vertex(x, y+50);
     idx = j;         
     x = width-idx*charWidth;
-    y = halfHeight+(cos((timer+idx)/6.0)*(height/4.0)*(sin(timer/100.0)));
+    y = halfHeight+(sin((pseudoTimer+idx)/6.0)*(height>>2)*(sin(pseudoTimer*0.01)));
     vertex(x, y-50);
   }
   endShape();
@@ -127,7 +131,7 @@ void draw() {
     char c = message.charAt(message.length()-1-j);
     float idx = (msgidx+j)%message.length();      
     float x = width-(idx*charWidth);
-    float y = halfHeight+(cos((timer+idx)/6.0)*(height/4.0)*(sin(timer/100.0)));
+    float y = halfHeight+(sin((pseudoTimer+idx)/6.0)*(height>>2)*(sin(pseudoTimer*0.01)));
     if (x>0 && x < width) {
       pushMatrix();    
       translate(x, y); 
@@ -155,8 +159,8 @@ void draw() {
     msgidx=0;    
     palette = randomPalette(int(random(2, 8)));
   }
-
-  // surface.setTitle(fontname + " / " + paletteCounter + " / " + int(frameRate));
+        
+  // surface.setTitle(fontname + " / " + int(frameRate));
 }
 
 //-----------------------------------------------------------------------------------------
